@@ -14,4 +14,6 @@ public interface VendaDAO {
 
 	public boolean trocaStatus(Venda venda);
 
+	public boolean inserir(Venda venda);
+
 }

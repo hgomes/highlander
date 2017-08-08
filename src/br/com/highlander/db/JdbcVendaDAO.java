@@ -26,8 +26,7 @@ public class JdbcVendaDAO implements VendaDAO {
 	@Override
 	public Venda selectById(int id) {
 
-		Venda venda = new Venda();
-
+		Venda venda    = null;
 		Connection conn = null;
 
 		try {
@@ -38,14 +37,9 @@ public class JdbcVendaDAO implements VendaDAO {
 
 			ResultSet rs           = pstm.executeQuery();
 
-			int i = 0;
 			while(rs.next()) {
 
-				venda.setId(rs.getInt(++i));
-				venda.setData(rs.getDate(++i));
-				venda.setLoja(rs.getInt(++i));
-				venda.setPdv(rs.getInt(++i));
-				venda.setStatus(rs.getString(++i));
+				venda = getResult(rs);
 			}
 
 
@@ -82,17 +76,7 @@ public class JdbcVendaDAO implements VendaDAO {
 
 			while(rs.next()) {
 
-				if (venda.getId()==0) { //gera o objeto venda.
-
-					venda.setId(rs.getInt(1));
-					venda.setData(rs.getDate(2));
-					venda.setLoja(rs.getInt(3));
-					venda.setPdv(rs.getInt(4));
-					venda.setStatus(rs.getString(5));
-				}
-
-				venda.addItemVenda(new ItemVenda(rs.getInt(6), rs.getInt(7), rs.getString(8), rs.getDouble(9), rs.getDouble(10)));
-
+				venda = getResult(rs);
 			}
 
 		} catch (Exception e) {
@@ -109,13 +93,32 @@ public class JdbcVendaDAO implements VendaDAO {
 				if (rs!=null)rs.close();
 
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			}
 		}
 
 		return venda;
 	}
+
+	private Venda getResult(ResultSet rs) throws SQLException {
+
+		Venda venda = new Venda();
+
+		if (venda.getId()==0) { //gera o objeto venda.
+
+			venda.setId(rs.getInt(1));
+			venda.setData(rs.getDate(2));
+			venda.setLoja(rs.getInt(3));
+			venda.setPdv(rs.getInt(4));
+			venda.setStatus(rs.getString(5));
+		}
+
+		venda.addItemVenda(new ItemVenda(rs.getInt(6), rs.getInt(7), rs.getString(8), rs.getDouble(9), rs.getDouble(10)));
+
+		return venda;
+	}
+
 
 	public boolean trocaStatus(Venda venda) {
 
@@ -145,16 +148,64 @@ public class JdbcVendaDAO implements VendaDAO {
 
 			} catch (SQLException e) {
 
-				e.printStackTrace();;
+				e.printStackTrace();
 			}
 		}
 
 		return false;
 	}
 
+	@Override
+	public boolean inserir(Venda venda) {
+
+		PreparedStatement pstm = null;
+		Connection conn        = null;
+		ResultSet rs           = null;
+		boolean ok 			   = false;
+
+		try {
+
+			conn = this.dataSource.getConnection();
+			pstm = conn.prepareStatement(INSERIR);
+			pstm.setInt(1, venda.getLoja());
+			pstm.setInt(2, venda.getPdv());
+			pstm.setString(3, venda.getStatus());
+
+			ok = (pstm.executeUpdate()>0);
+
+			rs = pstm.getGeneratedKeys();
+
+			if (rs.next()) {
+				venda.setId(rs.getInt(1));
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+
+			try {
+
+				if (pstm!=null)pstm.close();
+
+				if (conn!=null)conn.close();
+
+			} catch (SQLException e2) {
+				e2.printStackTrace();
+			}
+		}
+
+		return ok;
+	}
+
+
+
 	private static final String UPDATE_STATUS = "UPDATE tb_venda SET status = ? WHERE id_venda = ? ";
 
-	private static final String SELECT_BY_ID = "SELECT id_venda, data, loja, pdv, status  FROM tb_venda WHERE id_venda = ? ";
+	private static final String SELECT_BY_ID = "SELECT v.id_venda, v.data, v.loja, v.pdv, v.status, "
+			+ "iv.id_venda, iv.id_item_venda, iv.produto, iv.preco_unitario, iv.desconto "
+			+ "FROM tb_venda v "
+			+ "INNER JOIN tb_item_venda iv ON v.id_venda = iv.id_venda "
+			+ "WHERE v.id_venda = ? ";
 
 	private static final String SELECT_PRIMEIRA_VENDA_DISPONIVEL = "SELECT v.id_venda, v.data, v.loja, v.pdv, v.status, "
 			+ "iv.id_venda, iv.id_item_venda, iv.produto, iv.preco_unitario, iv.desconto "
@@ -162,6 +213,9 @@ public class JdbcVendaDAO implements VendaDAO {
 			+ "INNER JOIN tb_item_venda iv ON v.id_venda = iv.id_venda "
 			+ "WHERE v.status like 'NÃO PROCESSADO' "
 			+ "	AND v.id_venda = (SELECT MIN(id_venda) FROM tb_venda WHERE status like 'NÃO PROCESSADO'); ";
+
+	private static final String INSERIR = "INSERT INTO tb_venda(data, loja, pdv, status) VALUES(now(), ?, ?, ?)";
+
 
 
 }

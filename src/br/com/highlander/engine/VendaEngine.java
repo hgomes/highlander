@@ -47,7 +47,12 @@ public class VendaEngine {
 		return ok;
 	}
 
+	public boolean inserir(Venda venda) {
 
+		boolean ok = this.vendaDao.inserir(venda);
+
+		return ok;
+	}
 
 	public static synchronized VendaEngine getInstance() {
 

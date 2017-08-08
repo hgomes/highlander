@@ -6,6 +6,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import br.com.highlander.engine.ProcessamentoEngine;
 import br.com.highlander.entities.Processamento;
+import br.com.highlander.generatorfile.GeneratorFile;
 
 public class JobProcessamento extends Consumer<Processamento>  {
 
@@ -38,6 +39,7 @@ public class JobProcessamento extends Consumer<Processamento>  {
 			processamento.setStatus(PENDENTE);
 
 			ProcessamentoEngine.getInstance().inserir(processamento);
+
 		}
 	}
 

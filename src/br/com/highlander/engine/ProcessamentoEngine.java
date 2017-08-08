@@ -51,4 +51,11 @@ public class ProcessamentoEngine {
 		return processamento;
 
 	}
+
+	public boolean  trocarStatus(Processamento processamento) {
+
+		boolean ok = this.processamentoDao.trocarStatus(processamento);
+
+		return ok;
+	}
 }

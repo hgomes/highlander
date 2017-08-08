@@ -26,7 +26,7 @@ public class ConfigManager {
 		}
 	}
 
-	public synchronized ConfigManager getInstance() {
+	public static synchronized ConfigManager getInstance() {
 
 		if (instance==null) {
 
@@ -40,6 +40,11 @@ public class ConfigManager {
 		return this.config.getString(PASTA_PROCESSADO);
 	}
 
+	public String getUrlPost() {
+		return this.config.getString(URL_POST);
+	}
+
 	private static final String PASTA_PROCESSADO = "pasta.processado";
+	private static final String URL_POST         = "url.post";
 
 }

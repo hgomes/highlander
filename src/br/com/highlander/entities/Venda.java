@@ -1,13 +1,19 @@
 package br.com.highlander.entities;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import br.com.highlander.json.JSONArray;
 import br.com.highlander.json.JSONObject;
 
-public class Venda implements Resource  {
+public class Venda implements Resource, Serializable {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
 	private int id;
 	private Date data;
 	private int loja;
@@ -60,6 +66,12 @@ public class Venda implements Resource  {
 		this.itens.add(itemVenda);
 	}
 
+	public List<ItemVenda> getItens() {
+		return this.itens;
+	}
+
+
+
 	@Override
 	public String toJson() {
 
@@ -73,10 +85,16 @@ public class Venda implements Resource  {
 			json.put("pdv", String.valueOf(this.getPdv()));
 			json.put("status", String.valueOf(this.getStatus()));
 
+			JSONArray jsonArray = new JSONArray();
+			json.put("itens", jsonArray);
+
+			for (ItemVenda iv:this.getItens()) {
+				jsonArray.put(iv.toJson());
+			}
+
 		} catch(Exception e) {
 
 			e.printStackTrace();
-
 		}
 
 		return json.toString();

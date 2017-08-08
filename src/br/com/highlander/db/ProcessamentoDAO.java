@@ -8,4 +8,6 @@ public interface ProcessamentoDAO {
 
 	public Processamento selectPrimeiroRegistroPendente();
 
+	public boolean trocarStatus(Processamento processamento);
+
 }
